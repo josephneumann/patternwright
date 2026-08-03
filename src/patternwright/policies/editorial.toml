@@ -1,0 +1,236 @@
+schema-version = 1
+name = "editorial-signals"
+description = "Conservative advisory surfaces associated with formulaic or synthetic prose. Findings are editing prompts, never authorship verdicts."
+
+[[rules]]
+id = "PW001"
+kind = "regex"
+severity = "warning"
+category = "synthetic-contrast"
+expression = '''\bnot (?:just|only|merely)\b[^\n.!?]{0,60}\bbut\b'''
+message = "Inspect negative parallelism for a manufactured contrast or redundant first term."
+
+[[rules]]
+id = "PW002"
+kind = "regex"
+severity = "warning"
+category = "synthetic-contrast"
+expression = '''\b(?:it['’]s|it is) not\b(?!\s+(?:just|only|merely)\b)[^\n.!?]{0,60}\bbut\b'''
+message = "Inspect the 'it is not X but Y' frame; state the stronger proposition directly when the contrast is false."
+
+[[rules]]
+id = "PW003"
+kind = "regex"
+severity = "warning"
+category = "synthetic-contrast"
+expression = '''\b(?:it['’]s|it is) not\b[^\n.!?]{0,40}[,;:][^\n.!?]{0,40}\b(?:it['’]s|it is)\b'''
+message = "Inspect the repeated 'it is not X, it is Y' frame for redundant restatement."
+
+[[rules]]
+id = "PW010"
+kind = "word"
+severity = "warning"
+category = "stock-diction"
+expression = "delve"
+message = "Check whether a concrete verb would say what 'delve' leaves generic."
+
+[[rules]]
+id = "PW011"
+kind = "word"
+severity = "warning"
+category = "stock-diction"
+expression = "tapestry"
+message = "Check whether 'tapestry' supplies an image or only announces complexity."
+
+[[rules]]
+id = "PW012"
+kind = "word"
+severity = "warning"
+category = "stock-diction"
+expression = "myriad"
+message = "Check whether the quantity can be named more precisely."
+
+[[rules]]
+id = "PW013"
+kind = "word"
+severity = "warning"
+category = "stock-diction"
+expression = "plethora"
+message = "Check whether the quantity can be named more precisely."
+
+[[rules]]
+id = "PW014"
+kind = "word"
+severity = "warning"
+category = "significance-inflation"
+expression = "pivotal"
+message = "Verify that the surrounding evidence earns the announced importance."
+
+[[rules]]
+id = "PW015"
+kind = "word"
+severity = "warning"
+category = "significance-inflation"
+expression = "transformative"
+message = "Verify that the transformation is concrete rather than asserted."
+
+[[rules]]
+id = "PW016"
+kind = "word"
+severity = "warning"
+category = "significance-inflation"
+expression = "groundbreaking"
+message = "Verify that the novelty is demonstrated rather than announced."
+
+[[rules]]
+id = "PW017"
+kind = "word"
+severity = "warning"
+category = "stock-diction"
+expression = "unwavering"
+message = "Check whether the modifier adds observable information."
+
+[[rules]]
+id = "PW018"
+kind = "word"
+severity = "warning"
+category = "stock-diction"
+expression = "indelible"
+message = "Check whether the lasting effect is shown elsewhere in the passage."
+
+[[rules]]
+id = "PW020"
+kind = "phrase"
+severity = "warning"
+category = "metadiscourse"
+expression = "it's important to note"
+message = "Remove the announcement when the following fact can carry its own importance."
+
+[[rules]]
+id = "PW021"
+kind = "phrase"
+severity = "warning"
+category = "metadiscourse"
+expression = "it is important to note"
+message = "Remove the announcement when the following fact can carry its own importance."
+
+[[rules]]
+id = "PW022"
+kind = "phrase"
+severity = "warning"
+category = "metadiscourse"
+expression = "needless to say"
+message = "Delete the throat-clearing or explain why the supposedly needless statement is present."
+
+[[rules]]
+id = "PW023"
+kind = "phrase"
+severity = "warning"
+category = "significance-inflation"
+expression = "a testament to"
+message = "Replace the significance label with the evidence that earns it."
+
+[[rules]]
+id = "PW024"
+kind = "phrase"
+severity = "warning"
+category = "significance-inflation"
+expression = "stark reminder"
+message = "Check whether the reminder is demonstrated rather than announced."
+
+[[rules]]
+id = "PW025"
+kind = "phrase"
+severity = "warning"
+category = "significance-inflation"
+expression = "serves as a reminder"
+message = "State the remembered fact directly unless the reminding action matters."
+
+[[rules]]
+id = "PW026"
+kind = "phrase"
+severity = "warning"
+category = "metadiscourse"
+expression = "cannot be overstated"
+message = "Replace the importance claim with the consequence or evidence."
+
+[[rules]]
+id = "PW027"
+kind = "phrase"
+severity = "warning"
+category = "stock-frame"
+expression = "in today's fast-paced world"
+message = "Replace the generic scene-setting frame with the actual conditions."
+
+[[rules]]
+id = "PW028"
+kind = "phrase"
+severity = "warning"
+category = "stock-frame"
+expression = "ever-evolving landscape"
+message = "Name what changed and where instead of using a generic landscape metaphor."
+
+[[rules]]
+id = "PW029"
+kind = "phrase"
+severity = "warning"
+category = "metadiscourse"
+expression = "when it comes to"
+message = "Check whether the sentence can begin with its actual subject."
+
+[[rules]]
+id = "PW030"
+kind = "phrase"
+severity = "warning"
+category = "significance-inflation"
+expression = "plays a crucial role"
+message = "Name the specific function and consequence instead of announcing importance."
+
+[[rules]]
+id = "PW031"
+kind = "phrase"
+severity = "warning"
+category = "stock-frame"
+expression = "navigate the complexities"
+message = "Name the decisions or constraints hidden by the navigation metaphor."
+
+[[rules]]
+id = "PW040"
+kind = "phrase"
+severity = "warning"
+category = "fiction-cliche"
+expression = "sent a shiver"
+message = "Check whether the bodily reaction is specific to this character and moment."
+
+[[rules]]
+id = "PW041"
+kind = "phrase"
+severity = "warning"
+category = "fiction-cliche"
+expression = "something shifted"
+message = "Name the perceptible change or remove the withheld abstraction."
+
+[[rules]]
+id = "PW042"
+kind = "phrase"
+severity = "warning"
+category = "fiction-cliche"
+expression = "a beat passed"
+message = "Check whether a concrete action or silence can carry the pause."
+
+[[rules]]
+id = "PW043"
+kind = "phrase"
+severity = "warning"
+category = "fiction-cliche"
+expression = "let out a breath"
+message = "Check whether the reaction is necessary and physically particular."
+
+[[rules]]
+id = "PW044"
+kind = "regex"
+severity = "warning"
+category = "fiction-cliche"
+expression = '''\bbreath (?:he|she|they) (?:didn['’]t|did not) know (?:he|she|they) (?:was|were) holding\b'''
+message = "Inspect the unrecognized-held-breath formula for a more specific reaction."
+
