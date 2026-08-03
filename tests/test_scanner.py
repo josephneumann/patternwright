@@ -1,6 +1,6 @@
 import unittest
 
-from patternwright import default_policy, parse_policy, scan
+from patternwright import PolicyError, default_policy, merge_policies, parse_policy, scan
 from patternwright.preprocess import prepare_markdown
 
 from tests.support import one_rule, policy_source
@@ -63,6 +63,20 @@ class ScannerTests(unittest.TestCase):
     def test_empty_input_is_clean(self):
         self.assertEqual(scan("", default_policy()), ())
 
+    def test_resolved_suppression_removes_findings(self):
+        base = self.policy([
+            one_rule(id="FX001", kind="word", expression="pivotal"),
+            one_rule(id="FX002", kind="word", expression="tapestry"),
+        ])
+        overlay = parse_policy(policy_source([], disabled_rules=("FX001",)))
+        findings = scan("Pivotal tapestry.", merge_policies(base, overlay))
+        self.assertEqual([finding.rule_id for finding in findings], ["FX002"])
+
+    def test_unresolved_suppression_cannot_scan(self):
+        overlay = parse_policy(policy_source([], disabled_rules=("PW014",)))
+        with self.assertRaisesRegex(PolicyError, "unresolved disabled-rules"):
+            scan("pivotal", overlay)
+
     def test_default_false_contrast_is_advisory_and_deduplicated(self):
         policy = default_policy()
         factual = scan("The flag is not true but unknown.", policy)
@@ -74,6 +88,13 @@ class ScannerTests(unittest.TestCase):
         self.assertEqual(len(overlap), 1)
         self.assertEqual(overlap[0].rule_id, "PW001")
         self.assertEqual(overlap[0].severity, "warning")
+
+    def test_expected_medical_vocabulary_is_not_a_baseline_finding(self):
+        text = (
+            "Vital signs include temperature, pulse, respiration, and blood "
+            "pressure. The nurse recorded the patient's vital capacity."
+        )
+        self.assertEqual(scan(text, default_policy()), ())
 
     def test_markdown_preparation_masks_nonprose_and_preserves_offsets(self):
         raw = (

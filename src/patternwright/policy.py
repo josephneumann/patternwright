@@ -15,7 +15,9 @@ from .models import Policy, Rule
 SCHEMA_VERSION = 1
 KINDS = frozenset({"regex", "word", "phrase"})
 SEVERITIES = frozenset({"error", "warning"})
-TOP_LEVEL_KEYS = frozenset({"schema-version", "name", "description", "rules"})
+TOP_LEVEL_KEYS = frozenset({
+    "schema-version", "name", "description", "disabled-rules", "rules"
+})
 RULE_KEYS = frozenset({
     "id", "kind", "severity", "category", "expression", "message"
 })
@@ -101,9 +103,31 @@ def parse_policy(source: str, *, source_name: str = "<policy>") -> Policy:
     description = _require_string(
         data.get("description"), "description", source_name, 1
     )
-    raw_rules = data.get("rules")
-    if not isinstance(raw_rules, list) or not raw_rules:
-        raise PolicyError("%s: policy must contain at least one [[rules]] table" % source_name)
+    raw_disabled = data.get("disabled-rules", [])
+    if not isinstance(raw_disabled, list):
+        raise PolicyError("%s: disabled-rules must be an array" % source_name)
+    disabled_rules: list[str] = []
+    seen_disabled: set[str] = set()
+    for index, value in enumerate(raw_disabled, 1):
+        if not isinstance(value, str) or not RULE_ID.fullmatch(value):
+            raise PolicyError(
+                "%s: disabled-rules item %d must match %s"
+                % (source_name, index, RULE_ID.pattern)
+            )
+        if value in seen_disabled:
+            raise PolicyError(
+                "%s: duplicate disabled rule id %s" % (source_name, value)
+            )
+        seen_disabled.add(value)
+        disabled_rules.append(value)
+
+    raw_rules = data.get("rules", [])
+    if not isinstance(raw_rules, list):
+        raise PolicyError("%s: rules must be an array of tables" % source_name)
+    if not raw_rules and not disabled_rules:
+        raise PolicyError(
+            "%s: policy must contain rules or disabled-rules" % source_name
+        )
     lines = _rule_lines(source)
     if len(lines) != len(raw_rules):
         raise PolicyError("%s: could not locate every [[rules]] table" % source_name)
@@ -165,7 +189,20 @@ def parse_policy(source: str, *, source_name: str = "<policy>") -> Policy:
             order=order,
             _compiled=compiled,
         ))
-    return Policy(name=name, description=description, rules=tuple(rules), sources=(source_name,))
+    self_disabled = seen & seen_disabled
+    if self_disabled:
+        raise PolicyError(
+            "%s: a policy cannot define and disable the same rule id: %s"
+            % (source_name, ", ".join(sorted(self_disabled)))
+        )
+    return Policy(
+        name=name,
+        description=description,
+        rules=tuple(rules),
+        sources=(source_name,),
+        disabled_rules=tuple(disabled_rules),
+        composition_complete=not disabled_rules,
+    )
 
 
 def load_policy(path: str | Path) -> Policy:
@@ -182,7 +219,17 @@ def merge_policies(*policies: Policy) -> Policy:
         raise PolicyError("at least one policy is required")
     rules: list[Rule] = []
     seen: dict[str, str] = {}
+    disabled_rules: list[str] = []
     for policy in policies:
+        if policy.composition_complete:
+            for rule_id in policy.disabled_rules:
+                if rule_id in seen:
+                    raise PolicyError(
+                        "duplicate rule id %s in %s and %s"
+                        % (rule_id, seen[rule_id], policy.name)
+                    )
+                seen[rule_id] = policy.name
+                disabled_rules.append(rule_id)
         for rule in policy.rules:
             if rule.id in seen:
                 raise PolicyError(
@@ -191,11 +238,26 @@ def merge_policies(*policies: Policy) -> Policy:
                 )
             seen[rule.id] = rule.source
             rules.append(replace(rule, order=len(rules)))
+        if not policy.composition_complete:
+            active = {rule.id: index for index, rule in enumerate(rules)}
+            for rule_id in policy.disabled_rules:
+                if rule_id in disabled_rules:
+                    raise PolicyError("rule id %s is disabled more than once" % rule_id)
+                if rule_id not in active:
+                    raise PolicyError(
+                        "disabled rule id %s has no active earlier rule" % rule_id
+                    )
+                del rules[active[rule_id]]
+                rules = [replace(rule, order=index) for index, rule in enumerate(rules)]
+                disabled_rules.append(rule_id)
+                active = {rule.id: index for index, rule in enumerate(rules)}
     return Policy(
         name=" + ".join(policy.name for policy in policies),
         description="Combined policy set.",
         rules=tuple(rules),
         sources=tuple(source for policy in policies for source in policy.sources),
+        disabled_rules=tuple(disabled_rules),
+        composition_complete=True,
     )
 
 

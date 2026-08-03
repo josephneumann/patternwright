@@ -62,6 +62,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(report["schema"], "patternwright/report/v1")
         self.assertEqual(report["documents"][0]["source"], "<stdin>")
         self.assertIn("no authorship inference", report["claim"].lower())
+        self.assertNotIn("disabled_rules", report["policy"])
         self.assertEqual(errors, "")
 
     def test_invalid_utf8_surrogate_on_stdin_is_a_controlled_failure(self):
@@ -123,12 +124,15 @@ class CliTests(unittest.TestCase):
             path.write_text(policy_source([one_rule()]), encoding="utf-8")
             code, output, errors = self.run_cli(["policy", "check", str(path)])
             self.assertEqual(code, 0)
-            self.assertIn("1 rules", output)
+            self.assertIn("1 active rules", output)
             self.assertEqual(errors, "")
             code, output, unused_errors = self.run_cli([
                 "policy", "check", str(path), "--format", "json"
             ])
-            self.assertEqual(json.loads(output)["name"], "fixture")
+            report = json.loads(output)
+            self.assertEqual(report["name"], "fixture")
+            self.assertEqual(report["description"], "Fixture policy.")
+            self.assertNotIn("disabled_rules", report)
 
     def test_policy_check_rejects_zero_width_lookahead(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -143,6 +147,55 @@ class CliTests(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertEqual(output, "")
         self.assertIn("must consume at least one character", errors)
+
+    def test_default_rule_can_be_disabled_by_project_overlay(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "policy.toml"
+            path.write_text(
+                policy_source([], disabled_rules=("PW014",)), encoding="utf-8"
+            )
+            code, output, errors = self.run_cli([
+                "scan", "--text", "This is pivotal. A tapestry.",
+                "--policy", str(path), "--format", "json",
+            ])
+        report = json.loads(output)
+        self.assertEqual(code, 0)
+        self.assertEqual(
+            [finding["rule_id"] for finding in report["documents"][0]["findings"]],
+            ["PW011"],
+        )
+        self.assertEqual(report["policy"]["disabled_rules"], ["PW014"])
+        self.assertEqual(errors, "")
+
+    def test_unresolved_suppression_without_default_exits_two(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "policy.toml"
+            path.write_text(
+                policy_source([], disabled_rules=("PW014",)), encoding="utf-8"
+            )
+            code, output, errors = self.run_cli([
+                "scan", "--text", "pivotal", "--no-default-policy",
+                "--policy", str(path),
+            ])
+        self.assertEqual(code, 2)
+        self.assertEqual(output, "")
+        self.assertIn("no active earlier rule", errors)
+
+    def test_policy_check_can_validate_overlay_with_default(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "policy.toml"
+            path.write_text(
+                policy_source([], disabled_rules=("PW014",)), encoding="utf-8"
+            )
+            code, output, errors = self.run_cli([
+                "policy", "check", "--with-default-policy", str(path),
+                "--format", "json",
+            ])
+        report = json.loads(output)
+        self.assertEqual(code, 0)
+        self.assertEqual(report["disabled_rules"], ["PW014"])
+        self.assertNotIn("PW014", [rule["id"] for rule in report["rules"]])
+        self.assertEqual(errors, "")
 
 
 if __name__ == "__main__":

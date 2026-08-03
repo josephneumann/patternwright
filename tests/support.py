@@ -1,12 +1,14 @@
 import json
 
 
-def policy_source(rules, name="fixture"):
+def policy_source(rules, name="fixture", disabled_rules=()):
     lines = [
         "schema-version = 1",
         "name = %s" % json.dumps(name),
         'description = "Fixture policy."',
     ]
+    if disabled_rules:
+        lines.append("disabled-rules = %s" % json.dumps(list(disabled_rules)))
     for rule in rules:
         lines.extend([
             "",
@@ -32,4 +34,3 @@ def one_rule(**overrides):
     }
     rule.update(overrides)
     return rule
-

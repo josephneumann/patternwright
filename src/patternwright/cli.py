@@ -60,8 +60,14 @@ def _parser() -> argparse.ArgumentParser:
 
     policy_parser = subparsers.add_parser("policy", help="validate policy files")
     policy_subparsers = policy_parser.add_subparsers(dest="policy_command", required=True)
-    check_parser = policy_subparsers.add_parser("check", help="validate one policy")
-    check_parser.add_argument("path")
+    check_parser = policy_subparsers.add_parser(
+        "check", help="validate one policy composition"
+    )
+    check_parser.add_argument("paths", nargs="+", metavar="FILE")
+    check_parser.add_argument(
+        "--with-default-policy", action="store_true",
+        help="validate after composing files over the bundled policy",
+    )
     check_parser.add_argument("--format", choices=("text", "json"), default="text")
     return parser
 
@@ -71,7 +77,9 @@ def _load_policies(paths: list[str], omit_default: bool):
     policies.extend(load_policy(path) for path in paths)
     if not policies:
         raise CliError("no policy selected; provide --policy or omit --no-default-policy")
-    return merge_policies(*policies) if len(policies) > 1 else policies[0]
+    if len(policies) == 1 and policies[0].composition_complete:
+        return policies[0]
+    return merge_policies(*policies)
 
 
 def _validated_utf8(source: str, raw: str) -> str:
@@ -202,11 +210,23 @@ def _scan_command(args) -> int:
 
 
 def _policy_command(args) -> int:
-    policy = load_policy(args.path)
+    policies = [default_policy()] if args.with_default_policy else []
+    policies.extend(load_policy(path) for path in args.paths)
+    if len(policies) == 1 and policies[0].composition_complete:
+        policy = policies[0]
+    else:
+        policy = merge_policies(*policies)
     if args.format == "json":
         print(json.dumps(policy.to_dict(), ensure_ascii=False, sort_keys=True, indent=2))
     else:
-        print("Policy %s is valid: %d rules." % (policy.name, len(policy.rules)))
+        suffix = (
+            ", %d disabled" % len(policy.disabled_rules)
+            if policy.disabled_rules else ""
+        )
+        print(
+            "Policy %s is valid: %d active rules%s."
+            % (policy.name, len(policy.rules), suffix)
+        )
     return 0
 
 

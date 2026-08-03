@@ -66,6 +66,16 @@ def _finding(text: str, source: str, rule: Rule, start: int, end: int) -> Findin
 
 def scan(text: str, policy: Policy, *, source: str = "<text>") -> tuple[Finding, ...]:
     """Return deterministic, position-bearing findings for one text string."""
+    if not policy.composition_complete:
+        raise PolicyError(
+            "policy has unresolved disabled-rules; compose it with merge_policies"
+        )
+    overlap = set(policy.disabled_rules) & {rule.id for rule in policy.rules}
+    if overlap:
+        raise PolicyError(
+            "policy contains active disabled rule ids: %s"
+            % ", ".join(sorted(overlap))
+        )
     findings: list[tuple[int, int, Finding]] = []
     normalized: str | None = None
     offsets: list[int] | None = None
