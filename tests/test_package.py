@@ -11,6 +11,12 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class PackageTests(unittest.TestCase):
+    def test_build_backend_uses_the_tested_compatible_floor(self):
+        build_system = tomllib.loads(
+            (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        )["build-system"]
+        self.assertEqual(build_system["requires"], ["setuptools>=77"])
+
     def test_every_runtime_module_imports(self):
         for module in pkgutil.iter_modules(patternwright.__path__):
             if module.name != "__main__":

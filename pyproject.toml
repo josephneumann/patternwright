@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools==83.0.0"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "patternwright"
-version = "0.2.0"
+version = "0.2.1"
 description = "Deterministic prose-pattern evidence for human-led editing"
 readme = "README.md"
 requires-python = ">=3.11"

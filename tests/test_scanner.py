@@ -1,6 +1,13 @@
 import unittest
 
-from patternwright import PolicyError, default_policy, merge_policies, parse_policy, scan
+from patternwright import (
+    PolicyError,
+    default_policy,
+    merge_policies,
+    parse_policy,
+    scan,
+    scan_markdown,
+)
 from patternwright.preprocess import prepare_markdown
 
 from tests.support import one_rule, policy_source
@@ -110,6 +117,28 @@ class ScannerTests(unittest.TestCase):
         self.assertEqual(prepared.count("\n"), raw.count("\n"))
         findings = scan(prepared, default_policy())
         self.assertEqual([(finding.rule_id, finding.location.line) for finding in findings], [("PW022", 11)])
+
+    def test_markdown_scan_rejects_matches_that_bridge_masked_regions(self):
+        raw = "It is important to `x` note this.\n"
+        prepared = prepare_markdown(raw)
+        self.assertEqual(
+            [finding.rule_id for finding in scan(prepared, default_policy())],
+            ["PW021"],
+        )
+        self.assertEqual(scan_markdown(raw, default_policy()), ())
+
+    def test_markdown_scan_restores_raw_findings_and_exact_offsets(self):
+        raw = "---\ntitle: Pivotal\n---\nNeedless to say, this remains prose.\n"
+        findings = scan_markdown(raw, default_policy(), source="sample.md")
+        self.assertEqual([finding.rule_id for finding in findings], ["PW022"])
+        finding = findings[0]
+        self.assertEqual(finding.source, "sample.md")
+        self.assertEqual(finding.matched, "Needless to say")
+        self.assertEqual(
+            raw[finding.location.start:finding.location.end],
+            finding.matched,
+        )
+        self.assertEqual(finding.location.line, 4)
 
     def test_markdown_fence_closers_match_character_and_minimum_length(self):
         raw = (

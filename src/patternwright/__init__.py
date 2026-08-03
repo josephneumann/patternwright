@@ -3,7 +3,7 @@
 from .metrics import MetricConfig, TextMetrics, measure
 from .models import Finding, Location, Policy, Rule
 from .policy import PolicyError, default_policy, load_policy, merge_policies, parse_policy
-from .scanner import scan
+from .scanner import scan, scan_markdown
 
 __all__ = [
     "Finding",
@@ -19,6 +19,7 @@ __all__ = [
     "merge_policies",
     "parse_policy",
     "scan",
+    "scan_markdown",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
