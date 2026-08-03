@@ -34,7 +34,7 @@ class PackageTests(unittest.TestCase):
         self.assertNotIn("our revels", source)
         self.assertNotIn("scribewright", source)
 
-    def test_package_has_private_upload_guard(self):
+    def test_package_has_no_pypi_upload_guard(self):
         project = tomllib.loads(
             (ROOT / "pyproject.toml").read_text(encoding="utf-8")
         )["project"]

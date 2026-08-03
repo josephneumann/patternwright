@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Relicensed Patternwright under the MIT License for its public source repository.
+- Retained the package-index upload guard because Patternwright is not distributed through PyPI.
+
 ## 0.1.0
 
 - Added strict local policy parsing and immutable source-span findings.
@@ -7,8 +12,8 @@
 - Added conservative advisory defaults and project policy composition.
 - Added neutral configurable prose measurements.
 - Added offset-preserving Markdown exclusions.
-- Added a private Codex editing skill with felt-read, adjudication, revision, and rescan stages.
+- Added a Codex editing skill with felt-read, adjudication, revision, and rescan stages.
 - Added a cross-domain calibration corpus with explicit confirmed and intentional rulings.
 - Added controlled UTF-8 failures, complete zero-width validation, bounded report previews, and strict Markdown fence handling.
-- Added a private-upload metadata guard and pinned release build backend.
+- Added a package-index upload guard and pinned release build backend.
 - Added the initial standard-library regression suite.

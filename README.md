@@ -2,7 +2,7 @@
 
 Patternwright reports configured prose patterns for human-led editing. It combines a deterministic, standard-library Python linter with an optional Codex editing skill. It does not infer whether a human or machine wrote the text, and it never sends text to a model or network service.
 
-This repository is private and proprietary. It is designed for installation from a local checkout or a private Git repository, not publication to PyPI.
+Patternwright is open source under the MIT License. Install it from a local checkout or GitHub. It is intentionally not distributed through PyPI.
 
 ## What it provides
 
@@ -22,24 +22,28 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -e .
 ```
 
-For another private project, install directly from this checkout:
+For another project, install directly from a checkout:
 
 ```sh
 python3 -m pip install /path/to/patternwright
 ```
 
-A future private Git remote can replace the local path without changing the package contract. No package index is required.
+Or install from the public Git repository:
+
+```sh
+python3 -m pip install git+https://github.com/josephneumann/patternwright.git
+```
+
+No package index is required. The `Private :: Do Not Upload` package classifier is retained specifically to guard against accidental PyPI publication; it does not make the GitHub repository private.
 
 ## Companion Codex skill
 
-The private skill lives at `skills/patternwright-edit`. Install it for personal Codex use by copying that directory into the personal skills directory:
+The companion skill lives at `skills/patternwright-edit`. Install it for personal Codex use by copying that directory into the personal skills directory:
 
 ```sh
 mkdir -p ~/.codex/skills
 cp -R skills/patternwright-edit ~/.codex/skills/
 ```
-
-Keep the skill and this repository private: the editorial lenses contain the judgment workflow that complements the deterministic scanner.
 
 Invoke the installed skill as `$patternwright-edit`. It reads prose before scanning, runs Patternwright for exact evidence, adjudicates legitimate uses, and revises only when authorized.
 
