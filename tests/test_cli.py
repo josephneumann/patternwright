@@ -83,6 +83,19 @@ class CliTests(unittest.TestCase):
         self.assertIn("0 warnings", output)
         self.assertEqual(errors, "")
 
+    def test_markdown_file_does_not_match_across_inline_code(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sample.md"
+            path.write_text(
+                "It is important to `x` note this.\n", encoding="utf-8"
+            )
+            code, output, errors = self.run_cli([
+                "scan", str(path), "--fail-on", "warning",
+            ])
+        self.assertEqual(code, 0)
+        self.assertIn("0 warnings", output)
+        self.assertEqual(errors, "")
+
     def test_multiple_files_preserve_input_order(self):
         with tempfile.TemporaryDirectory() as directory:
             first = Path(directory) / "first.txt"

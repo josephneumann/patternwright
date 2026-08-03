@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import replace
 from pathlib import Path
 
 from . import __version__
@@ -13,7 +12,7 @@ from .metrics import measure
 from .policy import PolicyError, default_policy, load_policy, merge_policies
 from .preprocess import prepare_markdown
 from .report import combined_report, document_report
-from .scanner import scan
+from .scanner import scan, scan_markdown
 
 
 class CliError(ValueError):
@@ -126,26 +125,6 @@ def _masked(raw: str, requested: str, inferred: str) -> str:
     return prepare_markdown(raw) if mode == "markdown" else raw
 
 
-def _overlaps_mask(finding, raw: str, masked: str) -> bool:
-    return any(
-        raw[index] != masked[index]
-        for index in range(finding.location.start, finding.location.end)
-    )
-
-
-def _raw_finding(finding, raw: str):
-    start, end = finding.location.start, finding.location.end
-    line_start = raw.rfind("\n", 0, start) + 1
-    line_end = raw.find("\n", end)
-    if line_end < 0:
-        line_end = len(raw)
-    return replace(
-        finding,
-        matched=raw[start:end],
-        excerpt=" ".join(raw[line_start:line_end].split())[:180],
-    )
-
-
 def _print_text(report: dict[str, object], show_metrics: bool) -> None:
     for document in report["documents"]:
         for finding in document["findings"]:
@@ -189,11 +168,12 @@ def _scan_command(args) -> int:
     inputs = _read_inputs(args.inputs, args.text)
     documents = []
     for source, raw, inferred in inputs:
+        mode = inferred if args.input_format == "auto" else args.input_format
         masked = _masked(raw, args.input_format, inferred)
-        findings = tuple(
-            _raw_finding(finding, raw)
-            for finding in scan(masked, policy, source=source)
-            if not _overlaps_mask(finding, raw, masked)
+        findings = (
+            scan_markdown(raw, policy, source=source)
+            if mode == "markdown"
+            else scan(raw, policy, source=source)
         )
         documents.append(document_report(source, raw, findings, measure(masked)))
     report = combined_report(policy, documents)

@@ -2,8 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
-from patternwright import default_policy, scan
-from patternwright.preprocess import prepare_markdown
+from patternwright import default_policy, scan_markdown
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -19,7 +18,7 @@ class CalibrationTests(unittest.TestCase):
         for name, expected in self.expected.items():
             with self.subTest(name=name):
                 raw = (FIXTURES / name).read_text(encoding="utf-8")
-                findings = scan(prepare_markdown(raw), self.policy, source=name)
+                findings = scan_markdown(raw, self.policy, source=name)
                 actual = [
                     {
                         "rule_id": finding.rule_id,

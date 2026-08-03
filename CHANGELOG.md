@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1
+
+- Added public `scan_markdown()` as the single Markdown finding contract for
+  both library and CLI consumers.
+- Rejected phrase findings that bridge masked Markdown regions while preserving
+  raw source offsets, matched text and excerpts for admitted findings.
+- Documented the plain-text and Markdown Python API boundary explicitly.
+- Replaced the exact setuptools build-backend pin with the tested compatible
+  lower bound used by the original package metadata.
+
 ## 0.2.0
 
 - Added strict, ordered `disabled-rules` overlays for suppressing inherited

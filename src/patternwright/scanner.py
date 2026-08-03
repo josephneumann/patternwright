@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from .models import Finding, Location, Policy, Rule
 from .policy import PolicyError
+from .preprocess import prepare_markdown
 
 
 def _location(text: str, start: int, end: int) -> Location:
@@ -99,3 +102,35 @@ def scan(text: str, policy: Policy, *, source: str = "<text>") -> tuple[Finding,
             findings.append((start, rule.order, finding))
     findings.sort(key=lambda item: (item[0], item[1], item[2].location.end))
     return tuple(item[2] for item in findings)
+
+
+def _overlaps_mask(finding: Finding, raw: str, prepared: str) -> bool:
+    return any(
+        raw[index] != prepared[index]
+        for index in range(finding.location.start, finding.location.end)
+    )
+
+
+def _restore_raw_finding(finding: Finding, raw: str) -> Finding:
+    start, end = finding.location.start, finding.location.end
+    line_start = raw.rfind("\n", 0, start) + 1
+    line_end = raw.find("\n", end)
+    if line_end < 0:
+        line_end = len(raw)
+    return replace(
+        finding,
+        matched=raw[start:end],
+        excerpt=" ".join(raw[line_start:line_end].split())[:180],
+    )
+
+
+def scan_markdown(
+    text: str, policy: Policy, *, source: str = "<text>"
+) -> tuple[Finding, ...]:
+    """Scan Markdown prose while excluding masked syntax and non-prose regions."""
+    prepared = prepare_markdown(text)
+    return tuple(
+        _restore_raw_finding(finding, text)
+        for finding in scan(prepared, policy, source=source)
+        if not _overlaps_mask(finding, text, prepared)
+    )

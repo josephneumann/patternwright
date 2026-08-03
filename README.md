@@ -117,6 +117,20 @@ findings = scan(text, default_policy(), source="memo.txt")
 metrics = measure(text)
 ```
 
+`scan()` treats its input as plain text. Use the shared Markdown path when a
+document may contain frontmatter, comments, code, or URLs:
+
+```python
+from patternwright import default_policy, scan_markdown
+
+markdown = "Use `pivotal` in code, not as prose."
+findings = scan_markdown(markdown, default_policy(), source="memo.md")
+```
+
+`scan_markdown()` preserves raw source offsets and finding text, masks non-prose
+regions, and rejects matches that would bridge masked content. The CLI uses the
+same function for Markdown files and `--input-format markdown`.
+
 For composed policies, load each source and resolve it explicitly:
 
 ```python
