@@ -47,14 +47,19 @@ class Policy:
     description: str
     rules: tuple[Rule, ...]
     sources: tuple[str, ...]
+    disabled_rules: tuple[str, ...] = ()
+    composition_complete: bool = True
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        result: dict[str, object] = {
             "name": self.name,
             "description": self.description,
             "sources": list(self.sources),
             "rules": [rule.to_dict() for rule in self.rules],
         }
+        if self.disabled_rules:
+            result["disabled_rules"] = list(self.disabled_rules)
+        return result
 
 
 @dataclass(frozen=True, slots=True)

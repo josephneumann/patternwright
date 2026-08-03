@@ -36,15 +36,18 @@ def combined_report(
 ) -> dict[str, object]:
     errors = sum(int(document["counts"]["errors"]) for document in documents)
     warnings = sum(int(document["counts"]["warnings"]) for document in documents)
+    policy_report: dict[str, object] = {
+        "name": policy.name,
+        "sources": list(policy.sources),
+        "rule_count": len(policy.rules),
+    }
+    if policy.disabled_rules:
+        policy_report["disabled_rules"] = list(policy.disabled_rules)
     return {
         "schema": REPORT_SCHEMA,
         "tool": {"name": "patternwright", "version": __version__},
         "claim": "Configured prose-pattern evidence; no authorship inference.",
-        "policy": {
-            "name": policy.name,
-            "sources": list(policy.sources),
-            "rule_count": len(policy.rules),
-        },
+        "policy": policy_report,
         "documents": documents,
         "summary": {
             "documents": len(documents),
@@ -52,4 +55,3 @@ def combined_report(
             "warnings": warnings,
         },
     }
-

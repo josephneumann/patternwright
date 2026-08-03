@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0
+
+- Added strict, ordered `disabled-rules` overlays for suppressing inherited
+  rules by stable ID.
+- Added fail-closed validation for unknown, future, repeated, self-disabled,
+  and redefined rule IDs.
+- Added suppression evidence to policy and scan JSON when an overlay is used.
+- Added default-aware, multi-policy validation to `patternwright policy check`.
+- Preserved existing schema-version 1 policies, four-argument `Policy`
+  construction, finding serialization, default findings, and scan ordering.
+
 ## 0.1.1
 
 - Relicensed Patternwright under the MIT License for its public source repository.

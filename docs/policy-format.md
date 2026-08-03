@@ -24,6 +24,23 @@ expression = '''\bvery\s+unique\b'''
 message = "Use 'unique' or name the relevant degree."
 ```
 
+The optional top-level `disabled-rules` array suppresses active rules inherited
+from an earlier policy by stable ID:
+
+```toml
+schema-version = 1
+name = "project-exceptions"
+description = "Baseline findings this domain does not use."
+disabled-rules = ["PW014"]
+```
+
+An overlay may contain only `disabled-rules`; it does not need a dummy rule.
+This is rule suppression, not a word allowlist. For example, `PW014` is the
+bundled rule that reports `pivotal`, so disabling it allows that configured
+surface wherever the overlay is used. A term that no active rule targets is
+already allowed. For example, the bundled policy does not target `vital`, so
+medical phrases such as `vital signs` need no exception and produce no finding.
+
 Every rule requires exactly these fields:
 
 | Field | Contract |
@@ -47,9 +64,26 @@ Every rule requires exactly these fields:
 
 The bundled advisory policy loads first unless `--no-default-policy` is present. Every `--policy` file adds rules in command-line order. Rule IDs must remain unique across the complete set. Patternwright rejects duplicate IDs instead of silently overriding a rule.
 
+Composition is ordered. A policy may disable only a currently active rule from
+an earlier policy. Unknown IDs, forward references, self-suppression, repeated
+suppression, and attempts to redefine a suppressed ID fail closed. Remaining
+rules keep their relative order and receive dense effective order values.
+
+Validate a standalone policy or a real default-plus-overlay composition with:
+
+```sh
+patternwright policy check project-policy.toml
+patternwright policy check --with-default-policy project-exceptions.toml
+```
+
+A suppression-only overlay cannot be validated or scanned alone because its
+target is unresolved. `Policy.disabled_rules` and JSON reports preserve the
+ordered applied IDs as audit evidence. Policies loaded through the Python API
+must be passed through `merge_policies` before scanning when they declare
+suppressions.
+
 Use warnings for surfaces that require context. Reserve errors for explicit project law with known escape conditions and protected legitimate examples.
 
 ## Trust boundary
 
 Policies are executable matching configuration. The standard-library regex engine cannot time out catastrophic expressions. Review policies before use and never accept arbitrary regex policies from untrusted users.
-
