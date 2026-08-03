@@ -9,6 +9,7 @@ URL = re.compile(r"https?://[^\s)>\]}]+", re.IGNORECASE)
 INLINE_CODE = re.compile(r"(`+)([^\n]*?)\1")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 OBSIDIAN_COMMENT = re.compile(r"%%.*?%%", re.DOTALL)
+FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 
 
 def _blank(text: str) -> str:
@@ -34,16 +35,26 @@ def _blank_frontmatter(text: str) -> str:
 def _blank_fences(text: str) -> str:
     lines = text.splitlines(keepends=True)
     output: list[str] = []
-    marker: str | None = None
+    marker: tuple[str, int] | None = None
     for line in lines:
-        stripped = line.lstrip()
-        if marker is None and (stripped.startswith("```") or stripped.startswith("~~~")):
-            marker = stripped[:3]
+        body = line.rstrip("\r\n")
+        if marker is None:
+            opening = FENCE_OPEN.fullmatch(body)
+        else:
+            opening = None
+        if opening is not None:
+            run = opening.group(1)
+            marker = (run[0], len(run))
             output.append(_blank(line))
             continue
         if marker is not None:
             output.append(_blank(line))
-            if stripped.startswith(marker):
+            character, minimum = marker
+            closing = re.fullmatch(
+                r" {0,3}%s{%d,}[ \t]*" % (re.escape(character), minimum),
+                body,
+            )
+            if closing is not None:
                 marker = None
             continue
         output.append(line)
@@ -61,4 +72,3 @@ def prepare_markdown(text: str) -> str:
     if len(prepared) != len(text):
         raise AssertionError("Markdown preparation changed source length")
     return prepared
-

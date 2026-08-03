@@ -90,6 +90,37 @@ class ScannerTests(unittest.TestCase):
         findings = scan(prepared, default_policy())
         self.assertEqual([(finding.rule_id, finding.location.line) for finding in findings], [("PW022", 11)])
 
+    def test_markdown_fence_closers_match_character_and_minimum_length(self):
+        raw = (
+            "````text\n"
+            "Needless to say, hidden.\n"
+            "```\n"
+            "A tapestry remains hidden.\n"
+            "````\n"
+            "Visible tapestry.\n"
+            "~~~text\n"
+            "Needless to say, hidden again.\n"
+            "```\n"
+            "~~~\n"
+        )
+        prepared = prepare_markdown(raw)
+        findings = scan(prepared, default_policy())
+        self.assertEqual(
+            [(finding.rule_id, finding.location.line) for finding in findings],
+            [("PW011", 6)],
+        )
+
+    def test_serialized_match_is_bounded_but_location_remains_exact(self):
+        policy = self.policy([
+            one_rule(kind="regex", expression=r"(?s).+")
+        ])
+        text = "x" * 70_000
+        finding = scan(text, policy)[0]
+        serialized = finding.to_dict()
+        self.assertEqual(finding.location.end, len(text))
+        self.assertEqual(len(serialized["matched"]), 180)
+        self.assertTrue(serialized["matched"].endswith("..."))
+
 
 if __name__ == "__main__":
     unittest.main()

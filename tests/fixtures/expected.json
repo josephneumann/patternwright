@@ -1,0 +1,34 @@
+{
+  "fiction.md": [],
+  "technical.md": [],
+  "science.md": [],
+  "legal-policy.md": [
+    {"rule_id": "PW001", "line": 1, "column": 18, "matched": "not only to state agencies but", "ruling": "intentional"}
+  ],
+  "journalism-memoir.md": [
+    {"rule_id": "PW018", "line": 3, "column": 13, "matched": "indelible", "ruling": "intentional"}
+  ],
+  "promotional-aiish.md": [
+    {"rule_id": "PW027", "line": 1, "column": 1, "matched": "In today's fast-paced world", "ruling": "confirmed"},
+    {"rule_id": "PW031", "line": 1, "column": 49, "matched": "navigate the complexities", "ruling": "confirmed"},
+    {"rule_id": "PW028", "line": 1, "column": 81, "matched": "ever-evolving landscape", "ruling": "confirmed"},
+    {"rule_id": "PW016", "line": 1, "column": 110, "matched": "groundbreaking", "ruling": "confirmed"},
+    {"rule_id": "PW030", "line": 1, "column": 134, "matched": "plays a crucial role", "ruling": "confirmed"},
+    {"rule_id": "PW015", "line": 1, "column": 168, "matched": "transformative", "ruling": "confirmed"},
+    {"rule_id": "PW012", "line": 1, "column": 197, "matched": "myriad", "ruling": "confirmed"},
+    {"rule_id": "PW001", "line": 1, "column": 220, "matched": "not merely a tool but", "ruling": "confirmed"},
+    {"rule_id": "PW014", "line": 1, "column": 244, "matched": "pivotal", "ruling": "confirmed"},
+    {"rule_id": "PW020", "line": 3, "column": 1, "matched": "It's important to note", "ruling": "confirmed"},
+    {"rule_id": "PW023", "line": 3, "column": 56, "matched": "a testament to", "ruling": "confirmed"},
+    {"rule_id": "PW017", "line": 3, "column": 75, "matched": "unwavering", "ruling": "confirmed"},
+    {"rule_id": "PW025", "line": 3, "column": 123, "matched": "serves as a reminder", "ruling": "confirmed"},
+    {"rule_id": "PW026", "line": 3, "column": 169, "matched": "cannot be overstated", "ruling": "confirmed"},
+    {"rule_id": "PW029", "line": 3, "column": 191, "matched": "When it comes to", "ruling": "confirmed"},
+    {"rule_id": "PW013", "line": 3, "column": 246, "matched": "plethora", "ruling": "confirmed"},
+    {"rule_id": "PW010", "line": 3, "column": 297, "matched": "delve", "ruling": "confirmed"},
+    {"rule_id": "PW001", "line": 5, "column": 9, "matched": "not just about efficiency but", "ruling": "confirmed"},
+    {"rule_id": "PW018", "line": 5, "column": 57, "matched": "indelible", "ruling": "confirmed"},
+    {"rule_id": "PW011", "line": 5, "column": 112, "matched": "tapestry", "ruling": "confirmed"},
+    {"rule_id": "PW024", "line": 5, "column": 150, "matched": "stark reminder", "ruling": "confirmed"}
+  ]
+}

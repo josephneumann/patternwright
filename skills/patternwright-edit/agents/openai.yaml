@@ -1,0 +1,4 @@
+interface:
+  display_name: "Patternwright Editor"
+  short_description: "Detect and revise synthetic prose patterns"
+  default_prompt: "Use $patternwright-edit to inspect this text for synthetic prose patterns and revise confirmed problems without inferring authorship."

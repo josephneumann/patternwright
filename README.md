@@ -22,6 +22,27 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -e .
 ```
 
+For another private project, install directly from this checkout:
+
+```sh
+python3 -m pip install /path/to/patternwright
+```
+
+A future private Git remote can replace the local path without changing the package contract. No package index is required.
+
+## Companion Codex skill
+
+The private skill lives at `skills/patternwright-edit`. Install it for personal Codex use by copying that directory into the personal skills directory:
+
+```sh
+mkdir -p ~/.codex/skills
+cp -R skills/patternwright-edit ~/.codex/skills/
+```
+
+Keep the skill and this repository private: the editorial lenses contain the judgment workflow that complements the deterministic scanner.
+
+Invoke the installed skill as `$patternwright-edit`. It reads prose before scanning, runs Patternwright for exact evidence, adjudicates legitimate uses, and revises only when authorized.
+
 ## CLI
 
 Scan a file with the bundled advisory policy:
@@ -85,7 +106,16 @@ The bundled policy is deliberately conservative and advisory. Domain vocabulary,
 
 ## Security and privacy
 
-Patternwright runs locally and performs no network or model calls. JSON reports include excerpts from the supplied text, so handle them with the same care as the source document.
+Patternwright runs locally and performs no network or model calls. JSON reports include excerpts, bounded match previews, and supplied source and policy paths, so handle them with the same care as the source document. Exact offsets identify the full source span even when a match preview is truncated.
 
 Policy files are trusted local configuration. Python's standard regular-expression engine has no timeout, so do not run regex policies from untrusted sources.
 
+## Development verification
+
+The regression suite uses only the standard library:
+
+```sh
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+```
+
+The cross-domain calibration corpus in `tests/fixtures` covers clean fiction, technical documentation, scientific reporting, legal language, quoted rhetoric, and deliberately formulaic promotional prose. Expected matches include explicit editorial rulings so a legitimate phrase cannot silently become a conviction.

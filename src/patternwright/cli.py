@@ -74,18 +74,30 @@ def _load_policies(paths: list[str], omit_default: bool):
     return merge_policies(*policies) if len(policies) > 1 else policies[0]
 
 
+def _validated_utf8(source: str, raw: str) -> str:
+    try:
+        raw.encode("utf-8")
+    except UnicodeError as error:
+        raise CliError("%s is not valid UTF-8: %s" % (source, error)) from error
+    return raw
+
+
 def _read_inputs(inputs: list[str], literal: str | None) -> list[tuple[str, str, str]]:
     if literal is not None:
         if inputs:
             raise CliError("--text cannot be combined with file inputs")
-        return [("<text>", literal, "plain")]
+        return [("<text>", _validated_utf8("<text>", literal), "plain")]
     selected = inputs or ["-"]
     if selected.count("-") > 1:
         raise CliError("stdin may be selected only once")
     documents = []
     for value in selected:
         if value == "-":
-            documents.append(("<stdin>", sys.stdin.read(), "plain"))
+            try:
+                raw = sys.stdin.read()
+            except (OSError, UnicodeError) as error:
+                raise CliError("<stdin>: %s" % error) from error
+            documents.append(("<stdin>", _validated_utf8("<stdin>", raw), "plain"))
             continue
         path = Path(value)
         if not path.exists():
@@ -212,4 +224,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

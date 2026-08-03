@@ -7,6 +7,7 @@ import re
 import tomllib
 from dataclasses import replace
 from pathlib import Path
+from re import _parser as re_parser
 
 from .models import Policy, Rule
 
@@ -45,6 +46,14 @@ def _compile(kind: str, expression: str, source_name: str, line: int):
     try:
         if kind == "regex":
             compiled = re.compile(expression, re.IGNORECASE | re.MULTILINE)
+            minimum_width, _maximum_width = re_parser.parse(
+                expression, re.IGNORECASE | re.MULTILINE
+            ).getwidth()
+            if minimum_width == 0:
+                raise PolicyError(
+                    "%s:%d: regex rules must consume at least one character"
+                    % (source_name, line)
+                )
         elif kind == "word":
             if any(character.isspace() for character in expression):
                 raise PolicyError(
@@ -67,14 +76,6 @@ def _compile(kind: str, expression: str, source_name: str, line: int):
             "%s:%d: invalid regex: %s" % (source_name, line, error)
         ) from error
 
-    if compiled is not None:
-        for probe in ("", "a", " ", "ab", "a b", "\n"):
-            match = compiled.search(probe)
-            if match is not None and match.start() == match.end():
-                raise PolicyError(
-                    "%s:%d: rules may not produce zero-width matches"
-                    % (source_name, line)
-                )
     return compiled
 
 

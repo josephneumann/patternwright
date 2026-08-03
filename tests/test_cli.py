@@ -64,6 +64,12 @@ class CliTests(unittest.TestCase):
         self.assertIn("no authorship inference", report["claim"].lower())
         self.assertEqual(errors, "")
 
+    def test_invalid_utf8_surrogate_on_stdin_is_a_controlled_failure(self):
+        code, output, errors = self.run_cli(["scan", "-"], stdin="\udcff")
+        self.assertEqual(code, 2)
+        self.assertEqual(output, "")
+        self.assertIn("<stdin> is not valid UTF-8", errors)
+
     def test_markdown_file_masks_nonprose(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "sample.md"
@@ -124,7 +130,20 @@ class CliTests(unittest.TestCase):
             ])
             self.assertEqual(json.loads(output)["name"], "fixture")
 
+    def test_policy_check_rejects_zero_width_lookahead(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "policy.toml"
+            path.write_text(
+                policy_source([
+                    one_rule(kind="regex", expression=r"(?=z)")
+                ]),
+                encoding="utf-8",
+            )
+            code, output, errors = self.run_cli(["policy", "check", str(path)])
+        self.assertEqual(code, 2)
+        self.assertEqual(output, "")
+        self.assertIn("must consume at least one character", errors)
+
 
 if __name__ == "__main__":
     unittest.main()
-

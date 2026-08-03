@@ -6,6 +6,15 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+MATCH_PREVIEW_LIMIT = 180
+
+
+def _match_preview(value: str) -> str:
+    if len(value) <= MATCH_PREVIEW_LIMIT:
+        return value
+    return value[:MATCH_PREVIEW_LIMIT - 3] + "..."
+
+
 @dataclass(frozen=True, slots=True)
 class Rule:
     id: str
@@ -88,10 +97,9 @@ class Finding:
             "severity": self.severity,
             "category": self.category,
             "message": self.message,
-            "matched": self.matched,
+            "matched": _match_preview(self.matched),
             "excerpt": self.excerpt,
             "location": self.location.to_dict(),
             "policy_source": self.policy_source,
             "policy_line": self.policy_line,
         }
-

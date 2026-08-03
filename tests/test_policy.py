@@ -1,7 +1,6 @@
 import unittest
 
 from patternwright import PolicyError, default_policy, merge_policies, parse_policy
-from patternwright.scanner import scan
 
 from tests.support import one_rule, policy_source
 
@@ -48,14 +47,13 @@ class PolicyTests(unittest.TestCase):
         with self.assertRaises(PolicyError):
             parse_policy(policy_source([one_rule(kind="word", expression="two words")]))
 
-    def test_zero_width_rules_fail_at_parse_or_first_match(self):
-        with self.assertRaises(PolicyError):
-            parse_policy(policy_source([one_rule(kind="regex", expression=r"a*")]))
-        policy = parse_policy(
-            policy_source([one_rule(kind="regex", expression=r"(?=z)")])
-        )
-        with self.assertRaises(PolicyError):
-            scan("z", policy)
+    def test_zero_width_capable_rules_fail_during_policy_validation(self):
+        for expression in (r"a*", r"(?=z)", r"(?:a|)", r"^", r"\b"):
+            with self.subTest(expression=expression):
+                with self.assertRaises(PolicyError):
+                    parse_policy(policy_source([
+                        one_rule(kind="regex", expression=expression)
+                    ]))
 
     def test_duplicate_rule_ids_fail_within_and_across_policies(self):
         duplicate = policy_source([one_rule(), one_rule()])
@@ -83,4 +81,3 @@ class PolicyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
